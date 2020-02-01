@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Notification Clicker</string>
+    <string name="notification_service_name">Monitor notifications to find and automatically click on given keywords</string>
+</resources>
