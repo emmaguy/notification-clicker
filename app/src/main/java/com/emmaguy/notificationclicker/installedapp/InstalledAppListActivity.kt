@@ -1,5 +1,6 @@
 package com.emmaguy.notificationclicker.installedapp
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
@@ -9,11 +10,15 @@ import androidx.ui.core.Text
 import androidx.ui.core.setContent
 import androidx.ui.foundation.VerticalScroller
 import androidx.ui.graphics.Color
-import androidx.ui.layout.*
+import androidx.ui.graphics.Image
+import androidx.ui.layout.Column
+import androidx.ui.layout.LayoutHeight
+import androidx.ui.layout.LayoutWidth
+import androidx.ui.layout.Spacer
 import androidx.ui.material.Divider
+import androidx.ui.material.ListItem
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.TopAppBar
-import androidx.ui.material.surface.Surface
 import androidx.ui.unit.dp
 
 class InstalledAppsActivity : AppCompatActivity() {
@@ -25,30 +30,20 @@ class InstalledAppsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.viewState.observe(this, Observer { state ->
-            model.apps.apply {
-                clear()
-                addAll(state.packages)
-
-                // TODO: Compose should update without doing this again 🤔
-                setContent {
-                    MaterialTheme {
-                        renderInstalledAppList(model)
-                    }
-                }
-            }
-        })
-
         setContent {
             MaterialTheme {
                 renderInstalledAppList(model)
             }
         }
+
+        viewModel.viewState.observe(this, Observer { state ->
+            model.rows = state.packages
+        })
     }
 }
 
 @Model
-data class InstalledAppListModel(val apps: ArrayList<App> = arrayListOf())
+data class InstalledAppListModel(var rows: List<AppRow> = emptyList())
 
 @Composable
 fun renderInstalledAppList(model: InstalledAppListModel) {
@@ -58,8 +53,11 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
             VerticalScroller {
                 Column {
                     Spacer(modifier = LayoutHeight(height = 8.dp))
-                    model.apps.forEachIndexed { index, app ->
-                        renderApp(app, drawDivider = index != model.apps.size - 1)
+                    model.rows.forEachIndexed { index, row ->
+                        renderAppRow(
+                            row = row,
+                            drawDivider = index != model.rows.size - 1
+                        )
                     }
                 }
             }
@@ -68,29 +66,17 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
 }
 
 @Composable
-fun renderApp(
-    app: App,
-    drawDivider: Boolean
-) {
-    // TODO: Less padding more centering?
+fun renderAppRow(row: AppRow, drawDivider: Boolean) {
     Column(modifier = LayoutWidth.Fill) {
-        Spacer(modifier = LayoutHeight(height = 8.dp))
-        Row {
-            Spacer(modifier = LayoutWidth(16.dp))
-            // TODO: Draw actual Drawable
-            Surface(color = Color.Green) {
-                Container(width = 40.dp, height = 40.dp) {}
-            }
-            Spacer(modifier = LayoutWidth(16.dp))
-            Column {
-                Spacer(modifier = LayoutHeight(height = 8.dp))
-                Text(text = app.name)
-            }
-        }
-        Spacer(modifier = LayoutHeight(height = 8.dp))
+        ListItem(text = row.app.name, icon = row.app.icon.toImage(), onClick = row.onClick)
         if (drawDivider) {
             Divider(height = 1.dp, color = Color.LightGray, indent = 72.dp)
         }
     }
+}
+
+// TODO: Figure out how to convert this
+private fun Drawable.toImage(): Image? {
+    return Image(40.dp.value.toInt(), 40.dp.value.toInt())
 }
 

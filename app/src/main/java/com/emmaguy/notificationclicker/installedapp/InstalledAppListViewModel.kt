@@ -1,6 +1,5 @@
 package com.emmaguy.notificationclicker.installedapp
 
-import android.graphics.drawable.Drawable
 import com.emmaguy.notificationclicker.core.BaseViewModel
 
 class InstalledAppListViewModel(
@@ -8,9 +7,16 @@ class InstalledAppListViewModel(
 ) : BaseViewModel<InstalledAppListState>(initialState = InstalledAppListState()) {
 
     init {
-        setState { copy(packages = appRetriever.retrieve()) }
+        setState {
+            val apps = appRetriever.retrieve()
+            copy(packages = apps.map {
+                AppRow(it, onClick = {
+                    // TODO: Launch UI where you can enter what keywords to click
+                })
+            })
+        }
     }
 }
 
-data class InstalledAppListState(val packages: List<App> = emptyList())
-data class App(val name: String, val icon: Drawable, val packageName: String)
+data class InstalledAppListState(val packages: List<AppRow> = emptyList())
+data class AppRow(val app: App, val onClick: (() -> Unit)? = null)

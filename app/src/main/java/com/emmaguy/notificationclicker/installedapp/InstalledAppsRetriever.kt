@@ -1,6 +1,7 @@
 package com.emmaguy.notificationclicker.installedapp
 
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import androidx.compose.Context
 
 class InstalledAppsRetriever(private val context: Context) {
@@ -18,3 +19,9 @@ class InstalledAppsRetriever(private val context: Context) {
             }
     }
 }
+
+data class App(
+    val name: String,
+    val icon: Drawable,
+    val packageName: String
+)
