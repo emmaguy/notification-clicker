@@ -22,7 +22,7 @@ import androidx.ui.unit.dp
 
 class InstalledAppsActivity : AppCompatActivity() {
     private val viewModel: InstalledAppListViewModel by lazy {
-        InstalledAppListViewModel(InstalledAppsRetriever(this))
+        InstalledAppListViewModel(InstalledAppsRetriever(this), ActionStorage(this))
     }
     private val model = InstalledAppListModel()
 
@@ -59,7 +59,7 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
                         Column(modifier = LayoutWidth.Fill) {
                             ListItem(
                                 text = row.app.name,
-                                secondaryText = row.actions.joinToString(separator = ", ").ifBlank { null },
+                                secondaryText = row.actions.joinToString(", ").ifBlank { null },
                                 icon = row.app.icon.toImage(),
                                 onClick = {
                                     model.editingRow = row
@@ -77,14 +77,13 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
 
     val editingRow = model.editingRow
     if (editingRow != null) {
-        val state = state { "" }
+        val state = state { editingRow.actions.joinToString(separator = ", ") }
         AlertDialog(
             onCloseRequest = { model.editingRow = null },
             text = {
                 val appName = editingRow.app.name
                 Column {
                     Text(text = "Enter notification actions you want to be automatically clicked on for $appName, e.g. 'Skip Intro'")
-                    Spacer(modifier = LayoutHeight(height = 8.dp))
                     TextField(
                         value = state.value,
                         onValueChange = { state.value = it })
@@ -96,6 +95,7 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
                         clear()
                         add(state.value)
                     }
+                    editingRow.onActionsChanged?.invoke(editingRow.actions)
                     model.editingRow = null
                 })
             }

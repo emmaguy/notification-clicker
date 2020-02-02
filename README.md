@@ -6,5 +6,6 @@ Install (apk available in `Releases`) and then go to Settings -> Notification ac
 
 <img src="images/settings-how-to-enable.png" width="30%" />
 
-TODO:
-- Allow configurable keywords per app the user has installed
+Then configure what notifications you want to be automatically clicked on:
+
+<img src="images/app.png" width="30%" />
