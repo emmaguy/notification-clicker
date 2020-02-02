@@ -8,15 +8,14 @@ class InstalledAppListViewModel(
 
     init {
         setState {
-            val apps = appRetriever.retrieve()
+            val apps = appRetriever.retrieve().sortedBy { it.name }
             copy(packages = apps.map {
-                AppRow(it, onClick = {
-                    // TODO: Launch UI where you can enter what keywords to click
-                })
+                // TODO: Read what config we already have saved
+                AppRow(it, actions = arrayListOf())
             })
         }
     }
 }
 
 data class InstalledAppListState(val packages: List<AppRow> = emptyList())
-data class AppRow(val app: App, val onClick: (() -> Unit)? = null)
+data class AppRow(val app: App, val actions: ArrayList<String>)

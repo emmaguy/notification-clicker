@@ -5,8 +5,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
 import androidx.compose.Model
+import androidx.compose.state
 import androidx.lifecycle.Observer
 import androidx.ui.core.Text
+import androidx.ui.core.TextField
 import androidx.ui.core.setContent
 import androidx.ui.foundation.VerticalScroller
 import androidx.ui.graphics.Color
@@ -15,10 +17,7 @@ import androidx.ui.layout.Column
 import androidx.ui.layout.LayoutHeight
 import androidx.ui.layout.LayoutWidth
 import androidx.ui.layout.Spacer
-import androidx.ui.material.Divider
-import androidx.ui.material.ListItem
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.TopAppBar
+import androidx.ui.material.*
 import androidx.ui.unit.dp
 
 class InstalledAppsActivity : AppCompatActivity() {
@@ -43,7 +42,10 @@ class InstalledAppsActivity : AppCompatActivity() {
 }
 
 @Model
-data class InstalledAppListModel(var rows: List<AppRow> = emptyList())
+data class InstalledAppListModel(
+    var rows: List<AppRow> = emptyList(),
+    var editingRow: AppRow? = null
+)
 
 @Composable
 fun renderInstalledAppList(model: InstalledAppListModel) {
@@ -54,24 +56,50 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
                 Column {
                     Spacer(modifier = LayoutHeight(height = 8.dp))
                     model.rows.forEachIndexed { index, row ->
-                        renderAppRow(
-                            row = row,
-                            drawDivider = index != model.rows.size - 1
-                        )
+                        Column(modifier = LayoutWidth.Fill) {
+                            ListItem(
+                                text = row.app.name,
+                                secondaryText = row.actions.joinToString(separator = ", ").ifBlank { null },
+                                icon = row.app.icon.toImage(),
+                                onClick = {
+                                    model.editingRow = row
+                                }
+                            )
+                            if (index != model.rows.size - 1) {
+                                Divider(height = 1.dp, color = Color.LightGray, indent = 72.dp)
+                            }
+                        }
                     }
                 }
             }
         }
     }
-}
 
-@Composable
-fun renderAppRow(row: AppRow, drawDivider: Boolean) {
-    Column(modifier = LayoutWidth.Fill) {
-        ListItem(text = row.app.name, icon = row.app.icon.toImage(), onClick = row.onClick)
-        if (drawDivider) {
-            Divider(height = 1.dp, color = Color.LightGray, indent = 72.dp)
-        }
+    val editingRow = model.editingRow
+    if (editingRow != null) {
+        val state = state { "" }
+        AlertDialog(
+            onCloseRequest = { model.editingRow = null },
+            text = {
+                val appName = editingRow.app.name
+                Column {
+                    Text(text = "Enter notification actions you want to be automatically clicked on for $appName, e.g. 'Skip Intro'")
+                    Spacer(modifier = LayoutHeight(height = 8.dp))
+                    TextField(
+                        value = state.value,
+                        onValueChange = { state.value = it })
+                }
+            },
+            confirmButton = {
+                Button("Confirm", onClick = {
+                    editingRow.actions.apply {
+                        clear()
+                        add(state.value)
+                    }
+                    model.editingRow = null
+                })
+            }
+        )
     }
 }
 
