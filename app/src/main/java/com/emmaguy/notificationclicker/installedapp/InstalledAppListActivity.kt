@@ -30,9 +30,7 @@ class InstalledAppsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MaterialTheme {
-                renderInstalledAppList(model)
-            }
+            renderInstalledAppList(model)
         }
 
         viewModel.viewState.observe(this, Observer { state ->
