@@ -1,6 +1,5 @@
 package com.emmaguy.notificationclicker.installedapp
 
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
@@ -12,7 +11,6 @@ import androidx.ui.core.TextField
 import androidx.ui.core.setContent
 import androidx.ui.foundation.VerticalScroller
 import androidx.ui.graphics.Color
-import androidx.ui.graphics.Image
 import androidx.ui.layout.Column
 import androidx.ui.layout.LayoutHeight
 import androidx.ui.layout.LayoutWidth
@@ -58,7 +56,13 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
                             ListItem(
                                 text = row.app.name,
                                 secondaryText = row.actions.joinToString(", ").ifBlank { null },
-                                icon = row.app.icon.toImage(),
+                                icon = AndroidImage(
+                                    bitmap = row.app.icon.drawableToBitmap(
+                                        width = 64.dp.value.toInt(),
+                                        height = 64.dp.value.toInt(),
+                                        name = row.app.name
+                                    )
+                                ),
                                 onClick = {
                                     model.editingRow = row
                                 }
@@ -100,9 +104,3 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
         )
     }
 }
-
-// TODO: Figure out how to convert this
-private fun Drawable.toImage(): Image? {
-    return Image(40.dp.value.toInt(), 40.dp.value.toInt())
-}
-
