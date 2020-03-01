@@ -28,7 +28,7 @@ class InstalledAppsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            renderInstalledAppList(model)
+            installedAppList(model)
         }
 
         viewModel.viewState.observe(this, Observer { state ->
@@ -37,14 +37,8 @@ class InstalledAppsActivity : AppCompatActivity() {
     }
 }
 
-@Model
-data class InstalledAppListModel(
-    var rows: List<AppRow> = emptyList(),
-    var editingRow: AppRow? = null
-)
-
 @Composable
-fun renderInstalledAppList(model: InstalledAppListModel) {
+fun installedAppList(model: InstalledAppListModel) {
     MaterialTheme {
         Column {
             TopAppBar(title = { Text("Apps") })
@@ -52,25 +46,7 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
                 Column {
                     Spacer(modifier = LayoutHeight(height = 8.dp))
                     model.rows.forEachIndexed { index, row ->
-                        Column(modifier = LayoutWidth.Fill) {
-                            ListItem(
-                                text = row.app.name,
-                                secondaryText = row.actions.joinToString(", ").ifBlank { null },
-                                icon = AndroidImage(
-                                    bitmap = row.app.icon.drawableToBitmap(
-                                        width = 64.dp.value.toInt(),
-                                        height = 64.dp.value.toInt(),
-                                        name = row.app.name
-                                    )
-                                ),
-                                onClick = {
-                                    model.editingRow = row
-                                }
-                            )
-                            if (index != model.rows.size - 1) {
-                                Divider(height = 1.dp, color = Color.LightGray, indent = 72.dp)
-                            }
-                        }
+                        appRow(row, model, index)
                     }
                 }
             }
@@ -79,28 +55,62 @@ fun renderInstalledAppList(model: InstalledAppListModel) {
 
     val editingRow = model.editingRow
     if (editingRow != null) {
-        val state = state { editingRow.actions.joinToString(separator = ", ") }
-        AlertDialog(
-            onCloseRequest = { model.editingRow = null },
-            text = {
-                val appName = editingRow.app.name
-                Column {
-                    Text(text = "Enter notification actions you want to be automatically clicked on for $appName, e.g. 'Skip Intro'")
-                    TextField(
-                        value = state.value,
-                        onValueChange = { state.value = it })
-                }
-            },
-            confirmButton = {
-                Button("Confirm", onClick = {
-                    editingRow.actions.apply {
-                        clear()
-                        add(state.value)
-                    }
-                    editingRow.onActionsChanged?.invoke(editingRow.actions)
-                    model.editingRow = null
-                })
-            }
-        )
+        editNotificationActionsDialog(editingRow, model)
     }
 }
+
+@Composable
+fun appRow(row: AppRow, model: InstalledAppListModel, index: Int) {
+    Column(modifier = LayoutWidth.Fill) {
+        ListItem(
+            text = row.app.name,
+            secondaryText = row.actions.joinToString(", ").ifBlank { null },
+            icon = AndroidImage(
+                bitmap = row.app.icon.drawableToBitmap(
+                    width = 64.dp.value.toInt(),
+                    height = 64.dp.value.toInt(),
+                    name = row.app.name
+                )
+            ),
+            onClick = { model.editingRow = row }
+        )
+        if (index != model.rows.size - 1) {
+            Divider(height = 1.dp, color = Color.LightGray, indent = 72.dp)
+        }
+    }
+}
+
+@Composable
+fun editNotificationActionsDialog(editingRow: AppRow, model: InstalledAppListModel) {
+    val state = state { editingRow.actions.joinToString(separator = ", ") }
+    AlertDialog(
+        onCloseRequest = { model.editingRow = null },
+        text = {
+            val appName = editingRow.app.name
+            Column {
+                Text(text = "Enter notification actions you want to be automatically clicked on for $appName, e.g. 'Skip Intro'")
+                TextField(
+                    value = state.value,
+                    onValueChange = { state.value = it })
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                editingRow.actions.apply {
+                    clear()
+                    add(state.value)
+                }
+                editingRow.onActionsChanged?.invoke(editingRow.actions)
+                model.editingRow = null
+            }) {
+                Text(text = "Confirm")
+            }
+        }
+    )
+}
+
+@Model
+data class InstalledAppListModel(
+    var rows: List<AppRow> = emptyList(),
+    var editingRow: AppRow? = null
+)
