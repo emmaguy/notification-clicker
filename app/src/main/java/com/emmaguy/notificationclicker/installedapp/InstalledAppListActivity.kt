@@ -31,7 +31,7 @@ class InstalledAppsActivity : AppCompatActivity() {
             installedAppList(model)
         }
 
-        viewModel.viewState.observe(this, Observer { state ->
+        viewModel.state.observe(this, Observer { state ->
             model.rows = state.packages
         })
     }
