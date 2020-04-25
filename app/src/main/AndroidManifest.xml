@@ -11,9 +11,9 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
         <activity
-            android:name="com.emmaguy.notificationclicker.installedapp.InstalledAppsActivity"
+            android:name=".installedapp.InstalledAppsActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,7 +22,7 @@
         </activity>
 
         <service
-            android:name="com.emmaguy.notificationclicker.NotificationService"
+            android:name=".NotificationService"
             android:label="@string/notification_service_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>

@@ -5,16 +5,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
 import androidx.compose.Model
 import androidx.compose.state
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.Observer
-import androidx.ui.core.Text
-import androidx.ui.core.TextField
+import androidx.ui.core.Modifier
 import androidx.ui.core.setContent
+import androidx.ui.foundation.Text
+import androidx.ui.foundation.TextField
+import androidx.ui.foundation.TextFieldValue
 import androidx.ui.foundation.VerticalScroller
 import androidx.ui.graphics.Color
+import androidx.ui.graphics.asImageAsset
 import androidx.ui.layout.Column
-import androidx.ui.layout.LayoutHeight
-import androidx.ui.layout.LayoutWidth
 import androidx.ui.layout.Spacer
+import androidx.ui.layout.fillMaxWidth
+import androidx.ui.layout.preferredHeight
 import androidx.ui.material.*
 import androidx.ui.unit.dp
 
@@ -39,12 +43,12 @@ class InstalledAppsActivity : AppCompatActivity() {
 
 @Composable
 fun installedAppList(model: InstalledAppListModel) {
-    MaterialTheme {
+    MaterialTheme(colors = lightThemeColors) {
         Column {
             TopAppBar(title = { Text("Apps") })
             VerticalScroller {
                 Column {
-                    Spacer(modifier = LayoutHeight(height = 8.dp))
+                    Spacer(modifier = Modifier.preferredHeight(height = 8.dp))
                     model.rows.forEachIndexed { index, row ->
                         appRow(row, model, index)
                     }
@@ -61,21 +65,15 @@ fun installedAppList(model: InstalledAppListModel) {
 
 @Composable
 fun appRow(row: AppRow, model: InstalledAppListModel, index: Int) {
-    Column(modifier = LayoutWidth.Fill) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         ListItem(
             text = row.app.name,
             secondaryText = row.actions.joinToString(", ").ifBlank { null },
-            icon = AndroidImage(
-                bitmap = row.app.icon.drawableToBitmap(
-                    width = 64.dp.value.toInt(),
-                    height = 64.dp.value.toInt(),
-                    name = row.app.name
-                )
-            ),
+            icon = row.app.icon.toBitmap(width = 64.dp.value.toInt(), height = 64.dp.value.toInt()).asImageAsset(),
             onClick = { model.editingRow = row }
         )
         if (index != model.rows.size - 1) {
-            Divider(height = 1.dp, color = Color.LightGray, indent = 72.dp)
+            Divider(modifier = Modifier.preferredHeight(1.dp), color = Color.LightGray, startIndent = 72.dp)
         }
     }
 }
@@ -90,8 +88,10 @@ fun editNotificationActionsDialog(editingRow: AppRow, model: InstalledAppListMod
             Column {
                 Text(text = "Enter notification actions you want to be automatically clicked on for $appName, e.g. 'Skip Intro'")
                 TextField(
-                    value = state.value,
-                    onValueChange = { state.value = it })
+                    value = TextFieldValue(text = state.value),
+                    onValueChange = { state.value = it.text },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
